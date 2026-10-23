@@ -1,0 +1,9 @@
+lane,passes,runs_per_cell,tg_d0_c1,tg_d0_c10,tg_d8192_c1,tg_d8192_c10,pp_d0_c1,pp_d0_c10
+source_exp_1017,ab-current-20261019-1513.json,3,44.9,110.7,52.6,84.4,3337.5,4787.3
+baseline_orig_checkpoint,ab-baseline-20261019-1551.json,3,65.7,120.5,59.9,91.5,3742.4,5015.9
+knapcio_v24_cert_first,ab-v24-20261019-1610.json,3,64.2,106.8,61.8,85.4,3433.5,4096.6
+knapcio_v24_cert_warm,ab-v24-warm1-20261019-1748.json;ab-v24-warm2-20261019-1753.json,6,70.8,114.2,55.2,85.8,3773.0,4439.5
+knapcio_v24_nocert,ab-v24-warm1-nocert-20261019-1905.json;ab-v24-warm2-nocert-20261019-1909.json,6,64.6,114.9,69.9,85.1,3692.0,4950.2
+knapcio_bridge,ab-bridge-20261019-1718.json;ab-bridge-warm-20261019-1729.json,6,64.9,118.0,71.1,88.0,3895.7,5169.2
+fastload_nocert,ab-v24-warm1-nocert-fastload-20261019-2015.json;ab-v24-warm2-nocert-fastload-20261019-2018.json,6,63.7,120.4,60.2,91.1,3956.4,5267.2
+production_overlay,ab-prod-20261019-2055.json,3,59.9,114.6,69.4,92.0,3929.3,5041.6

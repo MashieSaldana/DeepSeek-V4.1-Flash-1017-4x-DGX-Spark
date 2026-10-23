@@ -1,0 +1,84 @@
+# knapcio v2.4 production lane — override of the spark-arena experimental 1017 recipe.
+#
+# Base: @experimental/deepseek-v4.1-flash-1017-b12x-dspark-sglang-tp4
+#       (itself a 4-line overlay over deepseek-v4.1-flash-b12x-dspark-sglang-tp4)
+# Everything not listed below comes from the base: model 1017 @1bae0e10, TP4/EP1/PP1,
+# DSpark k=5, 1M context, RoCEnante, the NCCL/RoCE env block, and the
+# dsv41-native-prepare mod. The deltas are the v2.4 production set, which is carried
+# by the local image — they are inert on the base's littlecedar image, which has no
+# v2.4 adapters and whose prepare.py rejects DSV41_FAST_LOAD=1.
+#
+# Run:  sparkrun run recipe/production.yaml
+# A/B:  sparkrun benchmark perf recipe/production.yaml \
+#           --skip-run --no-stop --fresh --profile benchmarks/ab-4cell.yaml
+recipe_version: "2"
+min_sparkrun_version: "0.4.0"
+
+include: "@experimental/deepseek-v4.1-flash-1017-b12x-dspark-sglang-tp4"
+
+# Restated for the listing view only: a catalog scan cannot resolve a @registry
+# include, so without these `sparkrun recipe list` shows this file's outer keys
+# (vllm-distributed / 1 node / no model). Values must match the base.
+model: deepseek-ai/DeepSeek-V4.1-Flash-1017
+runtime: sglang
+min_nodes: 4
+max_nodes: 4
+
+container: dsv41-knapcio-v24:canary-roce-local
+
+# `dsv41-native-prepare` resolves from this file's own directory first, then the
+# registry. The production recipe runs DSV41_FAST_LOAD=0, so the stock registry
+# mod works as-is. If you enable the fast loader, apply
+# mods/prepare-allow-fast-load.patch to the adjacent copy; the stock mod asserts
+# DSV41_FAST_LOAD=0 and would abort the prepare.
+mods:
+  - dsv41-native-prepare
+
+metadata:
+  description: >-
+    knapcio v2.4 production lane for DeepSeek-V4.1-Flash-1017 on four DGX Sparks:
+    the experimental 1017 recipe with the local v2.4 image (SGLang dsv4.1 tree +
+    RoCEnante + b12x_next), CERT head off, stock weight loader. TP4/EP1,
+    DSpark k=5, 1M context, fp8 KV.
+  model_dtype: fp8
+  attributions:
+    - author: knapcio
+      contribution: Production TP4 profile, canary-roce image, b12x/b12x_next kernels, v2.4 adapters.
+      url: https://github.com/knapcio/DeepSeek-V4.1-Flash-4x-DGX-Spark-TP4
+    - author: Little Cedar Group / spark-arena
+      contribution: Source recipe, pinned image lineage, runtime policy, and the dsv41-native-prepare mod.
+      url: https://github.com/littlecedar/sparkrun-recipe-registry/blob/fdd1003ba2a1e766a0129d26ef769ae4025c8c30/recipes/ds4/deepseek-v4.1-flash-knapcio-tp4-1m-sglang.yaml
+
+defaults:
+  # Listing-view restatement (see above); identical to the base.
+  tensor_parallel: 4
+  gpu_memory_utilization: 0.80
+  # Not set by the base; the v2.4 lane pins the cutlass fp8 GEMM runner.
+  fp8_gemm_backend: flashinfer_cutlass
+  # Expose SGLang /metrics (request counters) for cluster-autopower's idle probe.
+  # Requires the local sparkrun sglang flag-map patch for enable_metrics.
+  enable_metrics: true
+
+env:
+  # littlecedar leaves TP_PAD=1; 0 is what unlocks replicated_split (wqkv_a, engram.wkv).
+  DSV41_TP_PAD: "0"
+  # CERT head off: +27 % at d8192 c1 (p=0.02), no delta at c10.
+  DSV41_CERT_HEAD: "0"
+  DSV41_CERT_HEAD_M: "6,12,18,24,30,36,42,48"
+  DSV41_MXFP8_BACKEND: "b12x"
+
+  # Fast weight loader: target+draft load 372 s -> 71 s, boot-to-ready 482 s -> 148 s,
+  # paid for with ~25 % of the KV pool (6.80M vs 9.02M tokens at 0.80).
+  # Raise gpu_memory_utilization to 0.83 above this block for pool parity.
+  DSV41_FAST_LOAD: "0"
+  DSV41_PREPARE_ALLOW_FAST_LOAD: "1"
+  DSV41_FAST_LOAD_EP_SIZE: "1"
+  DSV41_FAST_LOAD_TP_SLICE: "auto"
+  DSV41_FAST_LOAD_N_EXPERTS: "384"
+  DSV41_FAST_LOAD_INFLIGHT_GB: "6"
+
+  DSV41_PREFILL_EMPTY_CACHE_TOKENS: "8192"
+  DSV41_STATS_SECONDS: "60"
+  SGLANG_FLASHINFER_MOE_FUSED_FINALIZE: "0"
+  SPARK_PREFILL_TP_MIN_CONTEXT: "32768"
+  SPARK_PREFILL_TP_MIN_ROWS: "1024"

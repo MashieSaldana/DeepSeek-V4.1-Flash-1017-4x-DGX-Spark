@@ -1,0 +1,131 @@
+recipe_version: '2'
+min_sparkrun_version: 0.4.0
+model: deepseek-ai/DeepSeek-V4.1-Flash-1017
+model_revision: 1bae0e1088993b9b82de08f59de5be5a34e42170
+runtime: sglang
+min_nodes: 4
+max_nodes: 4
+container: dsv41-knapcio-v24:canary-roce-local
+metadata:
+  description: 'knapcio v2.4 production lane for DeepSeek-V4.1-Flash-1017 on four
+    DGX Sparks: the experimental 1017 recipe with the local v2.4 image (SGLang dsv4.1
+    tree + RoCEnante + b12x_next), CERT head off, stock weight loader. TP4/EP1,
+    DSpark k=5, 1M context, fp8 KV.'
+  model_url: https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash-1017
+  model_params: 552B
+  model_dtype: fp8
+  model_mtp_dtype: mxfp4
+  kv_dtype: fp8
+  attributions:
+  - author: knapcio
+    contribution: Production TP4 profile, canary-roce image, b12x/b12x_next kernels,
+      v2.4 adapters.
+    url: https://github.com/knapcio/DeepSeek-V4.1-Flash-4x-DGX-Spark-TP4
+  - author: Little Cedar Group / spark-arena
+    contribution: Source recipe, pinned image lineage, runtime policy, and the dsv41-native-prepare
+      mod.
+    url: https://github.com/littlecedar/sparkrun-recipe-registry/blob/fdd1003ba2a1e766a0129d26ef769ae4025c8c30/recipes/ds4/deepseek-v4.1-flash-knapcio-tp4-1m-sglang.yaml
+mods: [dsv41-native-prepare]
+defaults:
+  port: 8000
+  host: 0.0.0.0
+  tensor_parallel: 4
+  data_parallel: 1
+  pipeline_parallel: 1
+  max_model_len: 1048576
+  expert_parallel: 1
+  trust_remote_code: true
+  load_format: safetensors
+  attention_backend: dsv4
+  moe_runner_backend: flashinfer_mxfp4
+  gpu_memory_utilization: 0.8
+  chunked_prefill: 4096
+  max_num_seqs: 16
+  cuda_graph_max_bs_decode: 16
+  max_total_tokens: 9400000
+  random_seed: 0
+  enable_decoder_swa_bounded_replay: true
+  tool_call_parser: deepseekv41
+  reasoning_parser: deepseek-v41
+  speculative_algorithm: DSPARK
+  speculative_dspark_block_size: 5
+  revision: '{model_revision}'
+  model_type: llm
+  fp8_gemm_backend: flashinfer_cutlass
+  enable_metrics: true
+env:
+  PYTHONUNBUFFERED: '1'
+  DSV41_CACHE_GIB: '4'
+  DSV41_CACHE_WAYS: '16'
+  DSV41_IO_THREADS: '96'
+  DSV41_RESIDENT_SCALES: '0'
+  DSV41_ENGRAM_PREFETCH: '1'
+  DSV41_INDEXER_CHUNKED: '1'
+  SGLANG_DSPARK_FOLDED_SAMPLING: '2'
+  SGLANG_RUST_BUILD_MODE: never
+  SPARK_PREFILL_TP_SPLIT: '1'
+  DSV41_SHARED_PAD_K: '1'
+  DSV41_WO_A_W8: '1'
+  DSV41_WO_A_W8_MID: '1'
+  DSV41_WO_A_W8_DROP: '1'
+  DSV41_DRAFT_TAU: '0.7'
+  DSV41_DRAFT_HEAD_FP8: '1'
+  DSV41_BLOCK_VERIFY: '1'
+  DSV41_FOLDED_FENCE: '1'
+  DSV41_VERIFY_CAP: conf:0.1
+  DSV41_AUTOTUNE_KEEP: '1'
+  DSV41_REPLICATED_SPLIT: wqkv_a,engram.wkv
+  DSV41_DRAFT_MAIN_PROJ_SPLIT: '1'
+  DSV41_SPLIT_COMPACT_GATHER: '1'
+  DSV41_ROUTER_LIVE: '1'
+  DSV41_MOE_B12X_NEXT: '1'
+  DSV41_MOE_B12X_NEXT_DETERMINISTIC: '1'
+  DSV41_HC_FUSED: '1'
+  DSV41_PREFILL_SP: '1'
+  DSV41_PREFILL_SP_FP8: '1'
+  DSV41_L2_PREFETCH: '1'
+  DSV41_L2_PREFETCH_WOA: '1'
+  DSV41_SPEC_SYNC_FREE: all
+  DSV41_EAGER_GLUE: all
+  SGLANG_ROCE_ALLREDUCE: '1'
+  SGLANG_ROCE_MAX_SIZE: '2097152'
+  DSV41_ROCE_GATHER: '2097152'
+  NCCL_P2P_DISABLE: '1'
+  NCCL_SHM_DISABLE: '1'
+  NCCL_CUMEM_ENABLE: '0'
+  NCCL_BUFFSIZE: '1048576'
+  NCCL_PROTO: ^LL128
+  NCCL_MAX_NCHANNELS: '8'
+  PYTORCH_CUDA_ALLOC_CONF: expandable_segments:False
+  CHUNKED_PREFILL_SIZE: '{config.chunked_prefill}'
+  CUDA_GRAPH_MAX_BS_DECODE: '{config.cuda_graph_max_bs_decode}'
+  DSPARK_BLOCK_SIZE: '{config.speculative_dspark_block_size}'
+  EP_SIZE: '{config.expert_parallel}'
+  DATA_PARALLEL: '{config.data_parallel}'
+  PIPELINE_PARALLEL: '{config.pipeline_parallel}'
+  TP_SIZE: '{config.tensor_parallel}'
+  NNODES: '{launch.num_nodes}'
+  SERVER_PORT: '{config.port}'
+  CONTEXT_LENGTH: '{config.max_model_len}'
+  DSV41_SOURCE: '{launch.model_path}'
+  DSV41_PACKED_DIR: '{launch.runtime_cache_dir}/engram/v1/{launch.model_revision}'
+  STATE_PATH: '{launch.runtime_cache_dir}/state'
+  B12X_ROCE_CACHE_DIR: '{launch.runtime_cache_dir}/b12x-roce'
+  B12X_COMPILE_CACHE_DIR: '{launch.runtime_cache_dir}/b12x-compile'
+  DSV41_TP_PAD: '0'
+  DSV41_CERT_HEAD: '0'
+  DSV41_CERT_HEAD_M: 6,12,18,24,30,36,42,48
+  DSV41_MXFP8_BACKEND: b12x
+  DSV41_FAST_LOAD: '0'
+  DSV41_PREPARE_ALLOW_FAST_LOAD: '1'
+  DSV41_FAST_LOAD_EP_SIZE: '1'
+  DSV41_FAST_LOAD_TP_SLICE: auto
+  DSV41_FAST_LOAD_N_EXPERTS: '384'
+  DSV41_FAST_LOAD_INFLIGHT_GB: '6'
+  DSV41_PREFILL_EMPTY_CACHE_TOKENS: '8192'
+  DSV41_STATS_SECONDS: '60'
+  SGLANG_FLASHINFER_MOE_FUSED_FINALIZE: '0'
+  SPARK_PREFILL_TP_MIN_CONTEXT: '32768'
+  SPARK_PREFILL_TP_MIN_ROWS: '1024'
+executor_config:
+  entrypoint: ''

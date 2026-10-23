@@ -1,0 +1,58 @@
+NOTICE
+
+This repository is an independent production note for a DeepSeek-V4.1-Flash-1017
+serving lane on four NVIDIA DGX Spark systems. It is not an official repository
+of Little Cedar Group, spark-arena, knapcio, MiaAI-Lab, DeepSeek, or NVIDIA.
+
+The MIT license in LICENSE covers the original text, recipe overlay, benchmark
+profile, scripts, and the patch in this repository. The upstream components and
+their licenses are listed below. No upstream source tree, container image, or
+model weight is redistributed in this repository.
+
+Components referenced or depended on
+-------------------------------------
+
+1. Little Cedar Group / spark-arena recipe registry
+   - Source recipe, native sparkrun recipe shape, runtime policy, and the
+     dsv41-native-prepare mod.
+   - License: MIT
+   - https://github.com/littlecedar/sparkrun-recipe-registry
+   - https://github.com/spark-arena/recipe-registry
+
+2. knapcio / DeepSeek-V4.1-Flash-4x-DGX-Spark-TP4
+   - Production TP4 profile, Dockerfile.canary-roce, v2.4 adapter set,
+     b12x/b12x_next, RoCEnante integration.
+   - License: AGPL-3.0
+   - https://github.com/knapcio/DeepSeek-V4.1-Flash-4x-DGX-Spark-TP4
+   - The Dockerfile and image are referenced, not redistributed. Build them
+     from the upstream repository at the pinned commit.
+
+3. MiaAI-Lab / DeepSeek-v4.1-Flash-DGX-Sparks
+   - Original DGX Spark DeepSeek deployment, Engram row store, launcher lineage.
+   - License: AGPL-3.0
+   - https://github.com/MiaAI-Lab/DeepSeek-v4.1-Flash-DGX-Sparks
+
+4. SGLang
+   - Inference engine and the dsv4.1 branch tree used by the image.
+   - License: Apache-2.0
+   - https://github.com/sgl-project/sglang
+
+5. b12x / b12x_next and RoCEnante
+   - MoE kernels and the path-aware RoCE ring used by the image.
+   - Licenses: Apache-2.0 (see the upstream repositories and the knapcio
+     NOTICE for the full component credits).
+   - https://github.com/local-inference-lab/b12x
+   - https://github.com/FujitsuPolycom/sparkring
+
+6. DeepSeek-V4.1-Flash-1017
+   - Model weights. Not redistributed here.
+   - License: MIT (Hugging Face model card)
+   - https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash-1017
+
+7. llama-benchy and sparkrun
+   - Benchmark harness and launcher used for the measurements.
+   - sparkrun: Apache-2.0, https://github.com/spark-arena/sparkrun
+
+Trademarks remain the property of their respective owners. All measurements are
+specific to the hardware, image, and dates described in the README; they are not
+a specification or a guarantee for other systems.

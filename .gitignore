@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.DS_Store
+*.swp
+benchmarks/ab-*.yaml
+!benchmarks/ab-4cell.yaml
+benchmarks/ab-*.json
+!benchmarks/raw/*.json
+benchmarks/ab-*.csv
+!benchmarks/csv/*.csv

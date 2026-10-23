@@ -1,0 +1,31 @@
+Allow DSV41_FAST_LOAD=1 as an explicit opt-in.
+
+The stock dsv41-native-prepare mod treats the stock weight loader as a policy
+requirement and rejects any lane with DSV41_FAST_LOAD=1. The same adapter set
+already boots with the fast loader (knapcio-baseline-diag does it), so this is a
+policy guard, not a dependency. The patch keeps the default behaviour (stock
+loader) and adds DSV41_PREPARE_ALLOW_FAST_LOAD=1 as the opt-in.
+
+Apply from the dsv41-native-prepare directory:
+    patch -p1 < prepare-allow-fast-load.patch
+
+--- a/prepare.py
++++ b/prepare.py
+@@ -98,9 +98,15 @@
+         env.get("SERVER_PORT") == env.get("SPARKRUN_PORT"),
+         "SERVER_PORT must match the serving port",
+     )
++    # The stock loader is a policy choice, not a requirement of this lane: the
++    # fast loader is gated in the image (adapter/fast_load.py) and the same
++    # adapter set boots with it (knapcio-baseline-diag). Opt in explicitly so
++    # the default lane keeps its ~220 s/boot stock behaviour.
+     require(
+-        env.get("DSV41_FAST_LOAD", "0") == "0",
+-        "this experimental baseline requires DSV41_FAST_LOAD=0",
++        env.get("DSV41_FAST_LOAD", "0") == "0"
++        or env.get("DSV41_PREPARE_ALLOW_FAST_LOAD", "0") == "1",
++        "this experimental baseline requires DSV41_FAST_LOAD=0 "
++        "(set DSV41_PREPARE_ALLOW_FAST_LOAD=1 to opt this lane into the fast loader)",
+     )
+     require(
+         env.get("PYTORCH_CUDA_ALLOC_CONF") == "expandable_segments:False",

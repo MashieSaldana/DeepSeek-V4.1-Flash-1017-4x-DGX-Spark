@@ -1,0 +1,9 @@
+framework: llama-benchy
+metadata:
+  description: 4-cell A/B probe (short + mid context, single-stream + batched)
+args:
+  depth: [0, 8192]
+  pp: [2048]
+  tg: [128]
+  concurrency: [1, 10]
+  prefix_caching: true
