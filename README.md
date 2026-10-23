@@ -13,15 +13,9 @@ different here is the sparkrun-native integration, two configuration changes
 that closed a large long-context decode gap, and the measurements showing which
 changes mattered and which did not.
 
-## Naming: 1017, not 1019
-
-The checkpoint in this lane is **`deepseek-ai/DeepSeek-V4.1-Flash-1017`**,
-revision `1bae0e1088993b9b82de08f59de5be5a34e42170`, published 2026-10-17.
-
-There is no “1019” checkpoint in this lane. The number 1019 appears in our notes
-for two unrelated reasons: the nodes run kernel `7.0.0-1019-nvidia`, and the
-build/measurement window was 2026-10-19. If you are comparing against this repo,
-compare against **1017**.
+The checkpoint is **`deepseek-ai/DeepSeek-V4.1-Flash-1017`**, revision
+`1bae0e1088993b9b82de08f59de5be5a34e42170`, published 2026-10-17. All
+measurements in this repository were taken during the 2026-10-19 tuning window.
 
 ## Lane at a glance
 
